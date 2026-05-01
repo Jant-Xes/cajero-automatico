@@ -19,18 +19,14 @@ Usuario usuarios[MAX_USUARIOS] = {
     {"pedro",  "pedro1", 750.25,   0}
 };
 
-/* Busca un usuario por nombre y devuelve su indice o -1 si no existe */
 int buscarUsuario(const char *nombre) {
     int i;
     for (i = 0; i < MAX_USUARIOS; i++) {
-        if (strcmp(usuarios[i].usuario, nombre) == 0) {
-            return i;
-        }
+        if (strcmp(usuarios[i].usuario, nombre) == 0) return i;
     }
     return -1;
 }
 
-/* Solicita credenciales y valida el acceso */
 int autenticar() {
     char nombreIngresado[20];
     char claveIngresada[20];
@@ -43,40 +39,47 @@ int autenticar() {
     while (intentos < MAX_INTENTOS) {
         printf("\nUsuario: ");
         scanf("%s", nombreIngresado);
-
         int idx = buscarUsuario(nombreIngresado);
-
         if (idx == -1) {
             printf("  [!] Usuario no encontrado.\n");
             intentos++;
             printf("  Intentos restantes: %d\n", MAX_INTENTOS - intentos);
             continue;
         }
-
         if (usuarios[idx].bloqueado) {
             printf("  [!] Cuenta bloqueada.\n");
             return -1;
         }
-
         printf("Contrasena: ");
         scanf("%s", claveIngresada);
-
         if (strcmp(usuarios[idx].contrasena, claveIngresada) == 0) {
             printf("\n  Bienvenido/a, %s!\n", usuarios[idx].usuario);
             return idx;
         } else {
             intentos++;
-            printf("  [!] Contrasena incorrecta. Intentos restantes: %d\n",
-                   MAX_INTENTOS - intentos);
+            printf("  [!] Contrasena incorrecta. Intentos restantes: %d\n", MAX_INTENTOS - intentos);
         }
     }
-
     int idx = buscarUsuario(nombreIngresado);
-    if (idx != -1) {
-        usuarios[idx].bloqueado = 1;
-        printf("\n  [!] Cuenta bloqueada por exceso de intentos.\n");
-    }
+    if (idx != -1) usuarios[idx].bloqueado = 1;
+    printf("\n  [!] Cuenta bloqueada por exceso de intentos.\n");
     return -1;
+}
+
+/* Muestra el menu principal con todas las opciones */
+void mostrarMenu() {
+    printf("\n========================================\n");
+    printf("            MENU PRINCIPAL              \n");
+    printf("========================================\n");
+    printf("  1. Consultar saldo\n");
+    printf("  2. Depositar\n");
+    printf("  3. Retirar\n");
+    printf("  4. Ver historial de transacciones\n");
+    printf("  5. Cambiar contrasena\n");
+    printf("  6. Transferir a otro usuario\n");
+    printf("  7. Salir\n");
+    printf("========================================\n");
+    printf("  Seleccione una opcion: ");
 }
 
 int main() {
@@ -85,6 +88,22 @@ int main() {
         printf("\n  Acceso denegado.\n");
         return 1;
     }
-    printf("\n  Login exitoso!\n");
+
+    int opcion;
+    do {
+        mostrarMenu();
+        scanf("%d", &opcion);
+        switch (opcion) {
+            case 1: printf("\n  [Consultar saldo - proximamente]\n"); break;
+            case 2: printf("\n  [Depositar - proximamente]\n"); break;
+            case 3: printf("\n  [Retirar - proximamente]\n"); break;
+            case 4: printf("\n  [Historial - proximamente]\n"); break;
+            case 5: printf("\n  [Cambiar contrasena - proximamente]\n"); break;
+            case 6: printf("\n  [Transferir - proximamente]\n"); break;
+            case 7: printf("\n  Hasta luego!\n"); break;
+            default: printf("\n  [!] Opcion invalida.\n");
+        }
+    } while (opcion != 7);
+
     return 0;
 }
