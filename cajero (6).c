@@ -1,9 +1,17 @@
+/*
+ * ============================================================
+ *  CAJERO AUTOMATICO DIGITAL - Version Final
+ *  Mejoras: bloqueo, historial, cambio contrasena,
+ *           transferencia entre usuarios
+ * ============================================================
+ */
+
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_USUARIOS 5
-#define MAX_INTENTOS 3
+#define MAX_USUARIOS  5
 #define MAX_HISTORIAL 20
+#define MAX_INTENTOS  3
 
 typedef struct {
     char descripcion[60];
@@ -26,7 +34,6 @@ Usuario usuarios[MAX_USUARIOS] = {
     {"pedro",  "pedro1", 750.25,   0, {}, 0}
 };
 
-/* Agrega un movimiento al historial del usuario */
 void agregarHistorial(Usuario *u, const char *texto) {
     if (u->numTransacciones < MAX_HISTORIAL) {
         strcpy(u->historial[u->numTransacciones].descripcion, texto);
@@ -111,7 +118,6 @@ void retirar(Usuario *u) {
     agregarHistorial(u, reg);
 }
 
-/* Muestra los ultimos movimientos del usuario */
 void verHistorial(Usuario *u) {
     printf("\n  --- Historial de transacciones ---\n");
     if (u->numTransacciones == 0) { printf("  No hay movimientos registrados.\n"); return; }
@@ -119,6 +125,45 @@ void verHistorial(Usuario *u) {
     for (i = 0; i < u->numTransacciones; i++)
         printf("  %d. %s\n", i+1, u->historial[i].descripcion);
     printf("  ----------------------------------\n");
+}
+
+/* Permite cambiar la contrasena verificando la actual primero */
+void cambiarContrasena(Usuario *u) {
+    char actual[20], nueva[20], confirmacion[20];
+    printf("\n  Contrasena actual: ");
+    scanf("%s", actual);
+    if (strcmp(u->contrasena, actual) != 0) { printf("  [!] Contrasena incorrecta.\n"); return; }
+    printf("  Nueva contrasena: ");
+    scanf("%s", nueva);
+    printf("  Confirmar nueva contrasena: ");
+    scanf("%s", confirmacion);
+    if (strcmp(nueva, confirmacion) != 0) { printf("  [!] Las contrasenas no coinciden.\n"); return; }
+    strcpy(u->contrasena, nueva);
+    printf("  Contrasena actualizada correctamente.\n");
+    agregarHistorial(u, "Cambio de contrasena realizado.");
+}
+
+/* Transfiere dinero a otro usuario registrado en el sistema */
+void transferir(Usuario *u) {
+    char destinatario[20];
+    float monto;
+    printf("\n  Usuario destinatario: ");
+    scanf("%s", destinatario);
+    if (strcmp(u->usuario, destinatario) == 0) { printf("  [!] No puedes transferirte a ti mismo.\n"); return; }
+    int idx = buscarUsuario(destinatario);
+    if (idx == -1) { printf("  [!] Usuario no encontrado.\n"); return; }
+    printf("  Monto a transferir: RD$ ");
+    scanf("%f", &monto);
+    if (monto <= 0) { printf("  [!] Monto invalido.\n"); return; }
+    if (monto > u->saldo) { printf("  [!] Fondos insuficientes. Saldo: RD$ %.2f\n", u->saldo); return; }
+    u->saldo -= monto;
+    usuarios[idx].saldo += monto;
+    printf("  Transferencia exitosa a %s. Nuevo saldo: RD$ %.2f\n", destinatario, u->saldo);
+    char regO[60], regD[60];
+    sprintf(regO, "Transferencia a %s: -RD$ %.2f | Saldo: RD$ %.2f", destinatario, monto, u->saldo);
+    sprintf(regD, "Transferencia de %s: +RD$ %.2f | Saldo: RD$ %.2f", u->usuario, monto, usuarios[idx].saldo);
+    agregarHistorial(u, regO);
+    agregarHistorial(&usuarios[idx], regD);
 }
 
 void mostrarMenu() {
@@ -150,9 +195,9 @@ int main() {
             case 2: depositar(u); break;
             case 3: retirar(u); break;
             case 4: verHistorial(u); break;
-            case 5: printf("\n  [Cambiar contrasena - proximamente]\n"); break;
-            case 6: printf("\n  [Transferir - proximamente]\n"); break;
-            case 7: printf("\n  Hasta luego!\n"); break;
+            case 5: cambiarContrasena(u); break;
+            case 6: transferir(u); break;
+            case 7: printf("\n  Gracias por usar el cajero. Hasta luego!\n"); break;
             default: printf("\n  [!] Opcion invalida.\n");
         }
     } while (opcion != 7);
