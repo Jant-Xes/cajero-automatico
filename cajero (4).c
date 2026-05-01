@@ -66,7 +66,41 @@ int autenticar() {
     return -1;
 }
 
-/* Muestra el menu principal con todas las opciones */
+/* Muestra el saldo actual del usuario */
+void consultarSaldo(Usuario *u) {
+    printf("\n  Saldo disponible: RD$ %.2f\n", u->saldo);
+}
+
+/* Deposita un monto al saldo del usuario */
+void depositar(Usuario *u) {
+    float monto;
+    printf("\n  Monto a depositar: RD$ ");
+    scanf("%f", &monto);
+    if (monto <= 0) {
+        printf("  [!] El monto debe ser mayor a cero.\n");
+        return;
+    }
+    u->saldo += monto;
+    printf("  Deposito exitoso. Nuevo saldo: RD$ %.2f\n", u->saldo);
+}
+
+/* Retira un monto del saldo del usuario si tiene fondos suficientes */
+void retirar(Usuario *u) {
+    float monto;
+    printf("\n  Monto a retirar: RD$ ");
+    scanf("%f", &monto);
+    if (monto <= 0) {
+        printf("  [!] El monto debe ser mayor a cero.\n");
+        return;
+    }
+    if (monto > u->saldo) {
+        printf("  [!] Fondos insuficientes. Saldo actual: RD$ %.2f\n", u->saldo);
+        return;
+    }
+    u->saldo -= monto;
+    printf("  Retiro exitoso. Nuevo saldo: RD$ %.2f\n", u->saldo);
+}
+
 void mostrarMenu() {
     printf("\n========================================\n");
     printf("            MENU PRINCIPAL              \n");
@@ -89,14 +123,15 @@ int main() {
         return 1;
     }
 
+    Usuario *u = &usuarios[idx];
     int opcion;
     do {
         mostrarMenu();
         scanf("%d", &opcion);
         switch (opcion) {
-            case 1: printf("\n  [Consultar saldo - proximamente]\n"); break;
-            case 2: printf("\n  [Depositar - proximamente]\n"); break;
-            case 3: printf("\n  [Retirar - proximamente]\n"); break;
+            case 1: consultarSaldo(u); break;
+            case 2: depositar(u); break;
+            case 3: retirar(u); break;
             case 4: printf("\n  [Historial - proximamente]\n"); break;
             case 5: printf("\n  [Cambiar contrasena - proximamente]\n"); break;
             case 6: printf("\n  [Transferir - proximamente]\n"); break;
